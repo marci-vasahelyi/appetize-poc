@@ -21,9 +21,9 @@ jobs:
           distribution: zulu
           java-version: 17
 
-      - name: Build debug APK
+      - name: Build release APK
         working-directory: android
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleRelease
 
       - name: Upload to Appetize
         env:
@@ -31,7 +31,7 @@ jobs:
         run: |
           curl --fail -X POST https://api.appetize.io/v1/apps \
             -H "X-API-KEY: $APPETIZE_TOKEN" \
-            -F "file=@android/app/build/outputs/apk/debug/app-debug.apk" \
+            -F "file=@android/app/build/outputs/apk/release/app-release.apk" \
             -F "platform=android" \
             -F "note=android-${{ github.sha }}"
 
@@ -50,13 +50,13 @@ jobs:
         working-directory: ios
         run: pod install
 
-      - name: Build iOS simulator app
+      - name: Build iOS simulator app (Release)
         run: |
           xcodebuild \
             -workspace ios/AppetizePoc.xcworkspace \
             -scheme AppetizePoc \
             -sdk iphonesimulator \
-            -configuration Debug \
+            -configuration Release \
             -derivedDataPath build/ios \
             -quiet \
             CODE_SIGNING_ALLOWED=NO
@@ -65,7 +65,7 @@ jobs:
         env:
           APPETIZE_TOKEN: ${{ secrets.APPETIZE_TOKEN }}
         run: |
-          cd build/ios/Build/Products/Debug-iphonesimulator
+          cd build/ios/Build/Products/Release-iphonesimulator
           zip -r /tmp/app.zip AppetizePoc.app
           curl --fail -X POST https://api.appetize.io/v1/apps \
             -H "X-API-KEY: $APPETIZE_TOKEN" \
